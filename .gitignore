@@ -7,11 +7,6 @@ __pycache__/
 .vscode/
 .idea/
 
-# Model Weights (Mencegah upload file bobot >100MB)
-*.pt
-*.onnx
-*.tflite
-
 # File Sistem Windows
 Thumbs.db
 Desktop.ini
