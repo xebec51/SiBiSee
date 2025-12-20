@@ -1,0 +1,21 @@
+# Python & Jupyter caches
+__pycache__/
+.ipynb_checkpoints/
+*.py[cod]
+
+# Editor settings
+.vscode/
+.idea/
+
+# Model Weights (Mencegah upload file bobot >100MB)
+*.pt
+*.onnx
+*.tflite
+
+# File Sistem Windows
+Thumbs.db
+Desktop.ini
+
+venv/
+__pycache__/
+.ipynb_checkpoints/
