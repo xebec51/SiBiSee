@@ -29,6 +29,28 @@
 
 ---
 
+## 📂 Dataset Details
+
+The model was trained using the **SIBI - v2 SIBI** dataset, sourced publicly from **Roboflow Universe**. This dataset provides a comprehensive collection of hand gestures representing the Indonesian Sign Language alphabet.
+
+* **Dataset Name:** SIBI - v2 SIBI
+* **Source Link:** [Click here to view on Roboflow](https://universe.roboflow.com/sibi-detection-nftzq/sibi-bieme/dataset/2)
+* **Total Images:** 4,802 images
+* **Classes:** 26 Classes (Alphabets A-Z)
+* **Format:** YOLOv8 Oriented Bounding Boxes (OBB) / Standard Object Detection
+* **Preprocessing:** Auto-orientation and pixel normalization (640x640 px)
+
+### Data Split Strategy
+To ensure objective evaluation, the dataset was split into three subsets:
+
+| Subset | Image Count | Percentage | Purpose |
+| :--- | :---: | :---: | :--- |
+| **Train** | 3,361 | 70% | Model learning and weight updates |
+| **Validation** | 961 | 20% | Hyperparameter tuning and metric monitoring |
+| **Test** | 480 | 10% | Final performance evaluation (unseen data) |
+
+---
+
 ## 📊 Model Performance
 
 The model was trained from scratch for **100 epochs** on a dataset of 4,802 SIBI images. The integration of CBAM showed significant improvements in **Precision**, reducing false positives in similar gestures (e.g., 'M' vs 'N').
