@@ -8,3 +8,4 @@ numpy
 streamlit-webrtc
 av
 twilio
+cryptography
