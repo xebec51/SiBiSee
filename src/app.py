@@ -2,6 +2,9 @@ import streamlit as st
 from ultralytics import YOLO
 from PIL import Image
 import numpy as np
+import cv2
+import av
+from streamlit_webrtc import webrtc_streamer, WebRtcMode, RTCConfiguration
 
 # --- KONFIGURASI HALAMAN ---
 st.set_page_config(
@@ -14,7 +17,6 @@ st.set_page_config(
 st.title("👋 SiBiSee: Deteksi SIBI Real-time")
 st.markdown("""
 Aplikasi ini menggunakan **YOLOv8 + CBAM** untuk mendeteksi Sistem Isyarat Bahasa Indonesia (SIBI).
-Dibuat oleh: **Muh. Rinaldi Ruslan**
 """)
 
 # --- SIDEBAR (PENGATURAN) ---
@@ -25,9 +27,7 @@ st.sidebar.header("⚙️ Pengaturan Model")
 def load_model(model_path):
     return YOLO(model_path)
 
-# Pastikan path model sesuai dengan lokasi file .pt Anda di folder models/
 try:
-    # Ganti 'best.pt' dengan nama file model Anda yang sebenarnya
     model_path = 'models/best.pt' 
     model = load_model(model_path)
     st.sidebar.success("Model berhasil dimuat!")
@@ -40,75 +40,80 @@ conf_threshold = st.sidebar.slider(
     "Confidence Threshold", 
     min_value=0.0, 
     max_value=1.0, 
-    value=0.25, 
+    value=0.40, # Naikkan sedikit agar kotak tidak flickering
     step=0.05
 )
 
-# --- PILIHAN SUMBER GAMBAR ---
-source_radio = st.sidebar.radio(
-    "Pilih Sumber Gambar:",
-    ["Upload Gambar", "Gunakan Kamera"]
+# --- PILIHAN MODE ---
+mode_select = st.sidebar.radio(
+    "Pilih Mode:",
+    ["Live Kamera (Real-time)", "Upload Gambar"]
 )
 
-# --- FUNGSI DETEKSI ---
-def detect_objects(image, conf):
-    # Lakukan prediksi
-    results = model.predict(image, conf=conf)
-    
-    # Plot hasil (menggambar kotak di gambar)
-    # [:, :, ::-1] mengubah BGR ke RGB agar warna benar di web
-    res_plotted = results[0].plot()[:, :, ::-1]
-    
-    return res_plotted, results
+# --- FUNGSI CALLBACK UNTUK VIDEO STREAMING ---
+def video_frame_callback(frame):
+    # Konversi frame WebRTC (av.VideoFrame) ke format OpenCV (numpy array)
+    img = frame.to_ndarray(format="bgr24")
 
-# --- LOGIKA TAMPILAN UTAMA ---
-col1, col2 = st.columns(2)
+    # Lakukan prediksi YOLO pada frame tersebut
+    # stream=True membuat inferensi lebih cepat untuk video
+    results = model(img, conf=conf_threshold)
 
-input_image = None
+    # Gambar kotak bounding box ke frame
+    annotated_frame = results[0].plot()
 
-with col1:
-    st.subheader("1. Input Citra")
+    # Kembalikan frame yang sudah digambar ke browser
+    return av.VideoFrame.from_ndarray(annotated_frame, format="bgr24")
+
+# --- LAYOUT UTAMA ---
+if mode_select == "Live Kamera (Real-time)":
+    st.subheader("🔴 Deteksi Video Langsung")
+    st.write("Izinkan akses kamera browser Anda. Deteksi akan berjalan otomatis.")
+
+    # Konfigurasi STUN Server (Penting untuk Deploy Cloud agar tidak blank)
+    rtc_configuration = RTCConfiguration(
+        {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+    )
+
+    # Jalankan Streamer WebRTC
+    webrtc_streamer(
+        key="sibisee-live",
+        mode=WebRtcMode.SENDRECV,
+        rtc_configuration=rtc_configuration,
+        video_frame_callback=video_frame_callback,
+        media_stream_constraints={"video": True, "audio": False},
+        async_processing=True,
+    )
+
+elif mode_select == "Upload Gambar":
+    st.subheader("🖼️ Deteksi Gambar Statis")
+    uploaded_file = st.file_uploader("Upload file JPG/PNG", type=['jpg', 'png', 'jpeg'])
     
-    if source_radio == "Upload Gambar":
-        uploaded_file = st.file_uploader("Upload file JPG/PNG", type=['jpg', 'png', 'jpeg'])
-        if uploaded_file is not None:
-            input_image = Image.open(uploaded_file)
-            st.image(input_image, caption="Gambar yang diupload", use_container_width=True)
+    col1, col2 = st.columns(2)
+    
+    if uploaded_file is not None:
+        image = Image.open(uploaded_file)
+        
+        with col1:
+            st.image(image, caption="Gambar Asli", use_container_width=True)
             
-    elif source_radio == "Gunakan Kamera":
-        camera_file = st.camera_input("Ambil foto gestur tangan")
-        if camera_file is not None:
-            input_image = Image.open(camera_file)
-            # Tampilan kamera sudah otomatis muncul di widget
-
-with col2:
-    st.subheader("2. Hasil Deteksi")
-    
-    if input_image is not None:
-        # Tombol Deteksi
-        if st.button("🔍 Deteksi SIBI", type="primary"):
-            with st.spinner('Sedang memproses...'):
-                # Proses Deteksi
-                result_img, result_data = detect_objects(input_image, conf_threshold)
+        if st.button("🔍 Deteksi Sekarang", type="primary"):
+            # Prediksi
+            results = model.predict(image, conf=conf_threshold)
+            res_plotted = results[0].plot()[:, :, ::-1] # BGR ke RGB
+            
+            with col2:
+                st.image(res_plotted, caption="Hasil Deteksi", use_container_width=True)
                 
-                # Tampilkan Gambar Hasil
-                st.image(result_img, caption="Hasil Deteksi YOLOv8-CBAM", use_container_width=True)
-                
-                # Tampilkan Detail Kelas (Opsional)
-                st.success("Deteksi Selesai!")
-                
-                # Menampilkan teks hasil prediksi
+                # Tampilkan teks hasil
                 names = model.names
-                detected_cls = result_data[0].boxes.cls.cpu().numpy()
+                detected_cls = results[0].boxes.cls.cpu().numpy()
                 if len(detected_cls) > 0:
-                    st.write("Terdeteksi:")
-                    for cls_id in detected_cls:
-                        st.info(f"👉 Huruf: **{names[int(cls_id)]}**")
+                    unique_cls = set(detected_cls) # Hapus duplikat agar rapi
+                    st.success(f"Terdeteksi: {', '.join([names[int(c)] for c in unique_cls])}")
                 else:
-                    st.warning("Tidak ada gestur yang terdeteksi.")
-    else:
-        st.info("Silakan upload gambar atau ambil foto untuk memulai.")
+                    st.warning("Tidak ada gestur terdeteksi.")
 
 # --- FOOTER ---
 st.divider()
-st.caption("© 2025 SiBiSee Project. Dikembangkan dengan Streamlit & YOLOv8.")
+st.caption("© 2025 SiBiSee Project | Powered by Streamlit & YOLOv8-CBAM")
