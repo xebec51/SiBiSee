@@ -6,6 +6,7 @@ import cv2
 import av
 from streamlit_webrtc import webrtc_streamer, WebRtcMode, RTCConfiguration
 from twilio.rest import Client
+import datetime
 
 # --- KONFIGURASI HALAMAN ---
 st.set_page_config(
@@ -49,7 +50,6 @@ def get_ice_servers():
 st.sidebar.header("⚙️ Pengaturan Model")
 conf_threshold = st.sidebar.slider("Confidence Threshold", 0.0, 1.0, 0.40, 0.05)
 
-# Update Pilihan Mode: Ubah nama agar lebih jelas
 mode_select = st.sidebar.radio(
     "Pilih Mode:", 
     ["Live Kamera (Real-time)", "Gambar Statis (Foto/Upload)"]
@@ -83,7 +83,6 @@ if mode_select == "Live Kamera (Real-time)":
 elif mode_select == "Gambar Statis (Foto/Upload)":
     st.subheader("🖼️ Deteksi Gambar Statis")
     
-    # Pilihan Sub-Metode: Upload File atau Ambil Foto
     img_source = st.radio(
         "Pilih Sumber Gambar:", 
         ("Upload File", "Ambil Foto (Kamera)"), 
@@ -92,7 +91,6 @@ elif mode_select == "Gambar Statis (Foto/Upload)":
     
     input_image = None
     
-    # Logika Input
     if img_source == "Upload File":
         uploaded_file = st.file_uploader("Upload file JPG/PNG", type=['jpg', 'png', 'jpeg'])
         if uploaded_file is not None:
@@ -103,26 +101,18 @@ elif mode_select == "Gambar Statis (Foto/Upload)":
         if camera_file is not None:
             input_image = Image.open(camera_file)
     
-    # Proses Deteksi (Sama untuk kedua sumber)
     if input_image is not None:
         col1, col2 = st.columns(2)
-        
         with col1:
             st.image(input_image, caption="Gambar Asli", use_container_width=True)
         
-        # Tombol Eksekusi
         if st.button("🔍 Deteksi Sekarang", type="primary"):
             with st.spinner('Sedang memproses...'):
-                # Prediksi YOLO
                 results = model.predict(input_image, conf=conf_threshold)
-                
-                # Plotting
-                res_plotted = results[0].plot()[:, :, ::-1] # Konversi BGR ke RGB
+                res_plotted = results[0].plot()[:, :, ::-1]
                 
                 with col2:
                     st.image(res_plotted, caption="Hasil Deteksi", use_container_width=True)
-                    
-                    # Tampilkan Teks Kelas
                     names = model.names
                     detected_cls = results[0].boxes.cls.cpu().numpy()
                     
@@ -134,6 +124,31 @@ elif mode_select == "Gambar Statis (Foto/Upload)":
                     else:
                         st.warning("Tidak ada gestur yang terdeteksi.")
 
-# --- FOOTER ---
+# --- FOOTER (SOSIAL MEDIA & COPYRIGHT) ---
 st.divider()
-st.caption("© 2025 SiBiSee Project | Powered by Streamlit & YOLOv8-CBAM")
+
+# Judul Kecil (Optional, bisa dihapus jika ingin sangat minimalis)
+st.markdown("<p style='text-align: center; color: gray;'>Connect with Developer:</p>", unsafe_allow_html=True)
+
+# Grid Tombol Sosial Media (5 Kolom)
+c1, c2, c3, c4, c5 = st.columns(5)
+
+with c1:
+    st.link_button("GitHub", "https://github.com/xebec51", use_container_width=True)
+with c2:
+    st.link_button("LinkedIn", "https://www.linkedin.com/in/rinaldiruslan", use_container_width=True)
+with c3:
+    st.link_button("Instagram", "https://instagram.com/rinaldiruslan", use_container_width=True)
+with c4:
+    st.link_button("TikTok", "https://tiktok.com/@rinaldiruslan", use_container_width=True)
+with c5:
+    st.link_button("Facebook", "https://web.facebook.com/rinaldi.naldi.5220", use_container_width=True)
+
+# Copyright
+current_year = datetime.datetime.now().year
+st.markdown(f"""
+<div style="text-align: center; margin-top: 15px; font-size: 12px; color: gray;">
+    © {current_year} Naldi. All rights reserved. <br>
+    Built with <b>Streamlit</b> & <b>YOLOv8-CBAM</b>
+</div>
+""", unsafe_allow_html=True)
