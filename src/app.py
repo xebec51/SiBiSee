@@ -7,7 +7,6 @@ import av
 from streamlit_webrtc import webrtc_streamer, WebRtcMode, RTCConfiguration
 from twilio.rest import Client
 import datetime
-# --- [BARU] Import Library Keamanan ---
 from cryptography.fernet import Fernet
 import os
 
@@ -22,21 +21,31 @@ st.set_page_config(
 st.title("👋 SiBiSee: Deteksi SIBI Real-time")
 st.markdown("""
 Aplikasi ini menggunakan **YOLOv8 + CBAM** untuk mendeteksi Sistem Isyarat Bahasa Indonesia (SIBI).
+Gunakan kamera atau upload gambar untuk memulai deteksi.
 """)
 
-# --- [BARU] FUNGSI DEKRIPSI & LOAD MODEL (SECURE) ---
+# --- [BARU] PANDUAN GESTURE (EXPANDER) ---
+with st.expander("ℹ️ Klik di sini untuk melihat Panduan Gesture SIBI (Contoh A-Z)"):
+    st.write("Gunakan gambar di bawah ini sebagai acuan untuk membentuk gerakan tangan Anda:")
+    # Pastikan file 'panduan_sibi.jpg' sudah ada di folder 'assets/' Anda.
+    # Jika nama file berbeda, silakan ubah path di bawah ini.
+    try:
+        st.image("assets/panduan_sibi.jpg", caption="Contoh Alfabet SIBI", use_container_width=True)
+    except FileNotFoundError:
+        st.warning("⚠️ File gambar panduan ('assets/panduan_sibi.jpg') belum ditemukan. Silakan tambahkan file gambar ke folder assets.")
+
+
+# --- FUNGSI DEKRIPSI & LOAD MODEL (SECURE) ---
 @st.cache_resource
 def load_model():
     encrypted_path = 'models/best.pt.enc'
     decrypted_path = 'temp_model.pt'
     
-    # Cek ketersediaan file terenkripsi
     if not os.path.exists(encrypted_path):
         st.error("File model terenkripsi (best.pt.enc) tidak ditemukan di server!")
         st.stop()
         
     try:
-        # 1. Ambil Kunci dari Secrets
         if "model_security" in st.secrets:
             key = st.secrets["model_security"]["ENCRYPTION_KEY"]
         else:
@@ -45,17 +54,14 @@ def load_model():
             
         fernet = Fernet(key)
 
-        # 2. Baca & Dekripsi
         with open(encrypted_path, "rb") as file:
             encrypted_data = file.read()
             
         decrypted_data = fernet.decrypt(encrypted_data)
 
-        # 3. Simpan Sementara (agar bisa dibaca YOLO)
         with open(decrypted_path, "wb") as file:
             file.write(decrypted_data)
         
-        # 4. Load ke YOLO
         model = YOLO(decrypted_path)
         
         return model
@@ -64,7 +70,6 @@ def load_model():
         st.error(f"Gagal mendekripsi model. Pastikan kunci di Secrets benar. Error: {e}")
         st.stop()
 
-# Panggil fungsi load model (tanpa parameter path lagi)
 model = load_model()
 
 # --- FUNGSI ICE SERVERS (TWILIO/STUN) ---
@@ -161,12 +166,9 @@ elif mode_select == "Gambar Statis (Foto/Upload)":
 # --- FOOTER (SOSIAL MEDIA & COPYRIGHT) ---
 st.divider()
 
-# Judul Kecil
 st.markdown("<p style='text-align: center; color: gray;'>Connect with Developer:</p>", unsafe_allow_html=True)
 
-# Grid Tombol Sosial Media (5 Kolom)
 c1, c2, c3, c4, c5 = st.columns(5)
-
 with c1:
     st.link_button("GitHub", "https://github.com/xebec51", use_container_width=True)
 with c2:
@@ -178,7 +180,6 @@ with c4:
 with c5:
     st.link_button("Facebook", "https://web.facebook.com/rinaldi.naldi.5220", use_container_width=True)
 
-# Copyright
 current_year = datetime.datetime.now().year
 st.markdown(f"""
 <div style="text-align: center; margin-top: 15px; font-size: 12px; color: gray;">
