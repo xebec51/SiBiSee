@@ -14,3 +14,4 @@ Desktop.ini
 venv/
 __pycache__/
 .ipynb_checkpoints/
+models/best.pt
