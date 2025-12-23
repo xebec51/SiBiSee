@@ -24,15 +24,36 @@ Aplikasi ini menggunakan **YOLOv8 + CBAM** untuk mendeteksi Sistem Isyarat Bahas
 Gunakan kamera atau upload gambar untuk memulai deteksi.
 """)
 
-# --- [BARU] PANDUAN GESTURE (EXPANDER) ---
-with st.expander("ℹ️ Klik di sini untuk melihat Panduan Gesture SIBI (Contoh A-Z)"):
-    st.write("Gunakan gambar di bawah ini sebagai acuan untuk membentuk gerakan tangan Anda:")
-    # Pastikan file 'panduan_sibi.jpg' sudah ada di folder 'assets/' Anda.
-    # Jika nama file berbeda, silakan ubah path di bawah ini.
+# --- [UPDATE] PANDUAN GESTURE DINAMIS (MEMBACA FOLDER GUIDE) ---
+with st.expander("ℹ️ Klik di sini untuk melihat Panduan Gesture SIBI (Daftar Lengkap)"):
+    st.write("Berikut adalah daftar semua kelas gesture yang dikenali oleh model:")
+    
+    guide_path = "assets/guide"
+    
     try:
-        st.image("assets/panduan_sibi.jpg", caption="Contoh Alfabet SIBI", use_container_width=True)
+        # Ambil semua file gambar di folder guide
+        guide_files = [f for f in os.listdir(guide_path) if f.endswith(('.jpg', '.png', '.jpeg'))]
+        
+        # Urutkan secara alfabetis
+        guide_files.sort()
+        
+        if len(guide_files) > 0:
+            # Buat Grid (6 kolom)
+            cols = st.columns(6)
+            
+            for i, file_name in enumerate(guide_files):
+                # Ambil nama kelas dari nama file (hapus .jpg)
+                class_name = os.path.splitext(file_name)[0]
+                img_path = os.path.join(guide_path, file_name)
+                
+                # Tampilkan gambar di kolom yang sesuai
+                with cols[i % 6]:
+                    st.image(img_path, caption=class_name, use_container_width=True)
+        else:
+            st.warning("⚠️ Belum ada gambar panduan di folder assets/guide.")
+            
     except FileNotFoundError:
-        st.warning("⚠️ File gambar panduan ('assets/panduan_sibi.jpg') belum ditemukan. Silakan tambahkan file gambar ke folder assets.")
+        st.warning("⚠️ Folder 'assets/guide' belum ditemukan di server.")
 
 
 # --- FUNGSI DEKRIPSI & LOAD MODEL (SECURE) ---
@@ -41,11 +62,13 @@ def load_model():
     encrypted_path = 'models/best.pt.enc'
     decrypted_path = 'temp_model.pt'
     
+    # Cek ketersediaan file terenkripsi
     if not os.path.exists(encrypted_path):
         st.error("File model terenkripsi (best.pt.enc) tidak ditemukan di server!")
         st.stop()
         
     try:
+        # 1. Ambil Kunci dari Secrets
         if "model_security" in st.secrets:
             key = st.secrets["model_security"]["ENCRYPTION_KEY"]
         else:
@@ -54,14 +77,17 @@ def load_model():
             
         fernet = Fernet(key)
 
+        # 2. Baca & Dekripsi
         with open(encrypted_path, "rb") as file:
             encrypted_data = file.read()
             
         decrypted_data = fernet.decrypt(encrypted_data)
 
+        # 3. Simpan Sementara (agar bisa dibaca YOLO)
         with open(decrypted_path, "wb") as file:
             file.write(decrypted_data)
         
+        # 4. Load ke YOLO
         model = YOLO(decrypted_path)
         
         return model
@@ -70,6 +96,7 @@ def load_model():
         st.error(f"Gagal mendekripsi model. Pastikan kunci di Secrets benar. Error: {e}")
         st.stop()
 
+# Panggil fungsi load model
 model = load_model()
 
 # --- FUNGSI ICE SERVERS (TWILIO/STUN) ---
