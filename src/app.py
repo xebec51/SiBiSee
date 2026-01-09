@@ -17,7 +17,6 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- JUDUL & DESKRIPSI ---
 st.title("👋 SiBiSee: Deteksi SIBI Real-time")
 st.markdown("""
 Aplikasi ini menggunakan **YOLOv8 + CBAM** untuk mendeteksi Sistem Isyarat Bahasa Indonesia (SIBI).
