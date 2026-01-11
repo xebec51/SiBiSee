@@ -95,7 +95,7 @@ def load_model():
         st.error(f"Gagal mendekripsi model. Pastikan kunci di Secrets benar. Error: {e}")
         st.stop()
 
-# Panggil fungsi load model
+# Load model
 model = load_model()
 
 # --- FUNGSI ICE SERVERS (TWILIO/STUN) ---
