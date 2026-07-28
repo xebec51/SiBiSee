@@ -63,6 +63,9 @@ Dataset yang disebut proyek lama berasal dari Roboflow Universe `sibi-detection-
 Audit dataset:
 
 ```powershell
+$env:ROBOFLOW_API_KEY = Read-Host "Roboflow API key"
+.\.venv\Scripts\python.exe scripts\download_dataset.py --output-dir D:\Datasets\SiBiSee
+Remove-Item Env:\ROBOFLOW_API_KEY
 $env:SIBISEE_DATASET_DIR = "D:\path\to\dataset"
 .\.venv\Scripts\python.exe scripts\build_manifest.py
 .\.venv\Scripts\python.exe scripts\create_splits.py

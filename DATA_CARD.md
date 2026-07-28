@@ -8,6 +8,7 @@ Dokumentasi lama menyebut dataset Roboflow Universe `sibi-detection-nftzq/sibi-b
 
 Dataset lokal tidak ditemukan di workspace saat audit. Script audit tersedia di:
 
+- `scripts/download_dataset.py`
 - `scripts/build_manifest.py`
 - `scripts/audit_dataset.py`
 - `scripts/create_splits.py`
