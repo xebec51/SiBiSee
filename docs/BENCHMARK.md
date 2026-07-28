@@ -1,10 +1,39 @@
 # Benchmark
 
-Benchmark deployment dijalankan dengan warm-up, batch size 1, input size produksi, dan banyak iterasi.
+Benchmark deployment dijalankan dengan warm-up, batch size 1, input size produksi, dan minimal 100 measured iterations. Script memisahkan pure inference dari annotation time.
 
 ```powershell
-.\.venv\Scripts\python.exe scripts\benchmark.py --model path\to\best.pt --iterations 100 --warmup 10
+.\.venv\Scripts\python.exe scripts\benchmark.py `
+  --model path\to\best.pt `
+  --backend pytorch `
+  --device 0 `
+  --iterations 100 `
+  --warmup 10 `
+  --output-dir artifacts\benchmarks\gpu
+
+.\.venv\Scripts\python.exe scripts\benchmark.py `
+  --model path\to\best.pt `
+  --backend pytorch `
+  --device cpu `
+  --iterations 100 `
+  --warmup 10 `
+  --output-dir artifacts\benchmarks\cpu
+
+.\.venv\Scripts\python.exe scripts\export_model.py `
+  --model path\to\best.pt `
+  --format onnx `
+  --output-dir artifacts\models\onnx
+
+.\.venv\Scripts\python.exe scripts\benchmark.py `
+  --model artifacts\models\onnx\best.onnx `
+  --backend onnx `
+  --iterations 100 `
+  --warmup 10 `
+  --no-annotation `
+  --output-dir artifacts\benchmarks\onnx
 ```
+
+Setiap `summary.json` mencatat mean, median, p95, FPS, environment snapshot, dan peak CUDA memory bila tersedia.
 
 Model baru hanya boleh dipromosikan bila memenuhi salah satu:
 
