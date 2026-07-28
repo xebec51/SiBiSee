@@ -1,0 +1,5 @@
+[allowlist]
+description = "Encrypted production model artifact is a binary file and is checked by SHA-256 separately."
+paths = [
+  '''models/best\.pt\.enc$''',
+]
