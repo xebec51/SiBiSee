@@ -3,6 +3,8 @@
 Benchmark deployment dijalankan dengan warm-up, batch size 1, input size produksi, dan minimal 100 measured iterations. Script memisahkan pure inference dari annotation time.
 
 ```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-benchmark.txt
+
 .\.venv\Scripts\python.exe scripts\benchmark.py `
   --model path\to\best.pt `
   --backend pytorch `
