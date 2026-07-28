@@ -1,17 +1,37 @@
-# Python & Jupyter caches
+# Python
 __pycache__/
-.ipynb_checkpoints/
 *.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
 
-# Editor settings
+# Jupyter
+.ipynb_checkpoints/
+
+# Local environments and secrets
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+*.key
+*.pem
+
+# Local runtimes and generated artifacts
+venv/
+.venv/
+runs/
+datasets/
+data/
+artifacts/private/
+reports/private/
+temp_model.pt
+*.tmp
+models/best.pt
+
+# Editor and OS files
 .vscode/
 .idea/
-
-# File Sistem Windows
 Thumbs.db
 Desktop.ini
-
-venv/
-__pycache__/
-.ipynb_checkpoints/
-models/best.pt
