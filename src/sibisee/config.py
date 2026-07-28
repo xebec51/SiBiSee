@@ -47,7 +47,9 @@ class TemporalSettings:
 @dataclass(frozen=True)
 class SecuritySettings:
     encrypted_model_path: Path = PROJECT_ROOT / "models" / "best.pt.enc"
-    model_sha256: str | None = "9f58c1af732e6817efb3776842667d72d98fb37c9a336a049fbd1d5b19da8661"
+    model_sha256: str | None = (
+        "9f58c1af732e6817efb3776842667d72d98fb37c9a336a049fbd1d5b19da8661"  # pragma: allowlist secret
+    )
     max_upload_mb: int = 8
     max_image_pixels: int = 12_000_000
 
@@ -82,7 +84,7 @@ def load_settings() -> AppSettings:
         encrypted_model_path=Path(os.getenv("SIBISEE_MODEL_PATH", str(PROJECT_ROOT / "models" / "best.pt.enc"))),
         model_sha256=os.getenv(
             "SIBISEE_MODEL_SHA256",
-            "9f58c1af732e6817efb3776842667d72d98fb37c9a336a049fbd1d5b19da8661",
+            "9f58c1af732e6817efb3776842667d72d98fb37c9a336a049fbd1d5b19da8661",  # pragma: allowlist secret
         ),
         max_upload_mb=max(1, _env_int("SIBISEE_MAX_UPLOAD_MB", 8)),
         max_image_pixels=max(1, _env_int("SIBISEE_MAX_IMAGE_PIXELS", 12_000_000)),
