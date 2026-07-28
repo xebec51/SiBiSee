@@ -1,11 +1,1 @@
-opencv-python-headless
-ultralytics
-torch
-torchvision
-streamlit
-pillow
-numpy
-streamlit-webrtc
-av
-twilio
-cryptography
+-r requirements-app.txt

@@ -1,0 +1,10 @@
+-r requirements-app.txt
+ipykernel==6.29.5
+jupyter==1.1.1
+matplotlib==3.9.2
+pandas==2.2.3
+pyyaml==6.0.2
+idna==3.15
+roboflow==1.4.0
+scikit-learn==1.5.2
+tqdm==4.66.5
