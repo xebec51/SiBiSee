@@ -14,7 +14,7 @@ def render_transcript_panel(st, transcript: TranscriptBuilder, last_token: str |
     col_a, col_b, col_c = st.columns(3)
     col_a.metric("Token terakhir", last_token or "-")
     col_b.metric("Confidence stabil", f"{confidence:.2f}" if confidence else "-")
-    col_c.metric("Jumlah token", len(transcript.tokens))
+    col_c.metric("Jumlah token", len(transcript.snapshot()))
 
     st.text_area("Hasil pengenalan", transcript.text, height=130)
     undo, clear, download = st.columns(3)

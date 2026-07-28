@@ -26,7 +26,7 @@ class YoloDetector:
     def names(self) -> dict[int, str] | list[str]:
         return self._model.names
 
-    def predict(self, image: Image.Image | Any) -> PredictionResult:
+    def predict(self, image: Image.Image | Any, *, annotate: bool = False) -> PredictionResult:
         prepared = (
             preprocess_for_inference(image, self._settings.image_size) if isinstance(image, Image.Image) else image
         )
@@ -40,21 +40,19 @@ class YoloDetector:
                 verbose=False,
             )
         latency_ms = (time.perf_counter() - start) * 1000
-        detections = detections_from_ultralytics(raw_results[0], self.names)
+        raw_result = raw_results[0]
+        detections = detections_from_ultralytics(raw_result, self.names)
         detections = filter_detections(
             detections,
             confidence_threshold=self._settings.confidence_threshold,
             allowlist=self._settings.class_allowlist,
         )
-        return PredictionResult(detections=dedupe_by_class(detections), latency_ms=latency_ms)
+        annotated_frame = raw_result.plot() if annotate else None
+        return PredictionResult(
+            detections=dedupe_by_class(detections),
+            latency_ms=latency_ms,
+            annotated_frame=annotated_frame,
+        )
 
     def annotate(self, image: Any) -> Any:
-        with self._lock:
-            raw_results = self._model.predict(
-                image,
-                conf=self._settings.confidence_threshold,
-                iou=self._settings.iou_threshold,
-                max_det=self._settings.max_detections,
-                verbose=False,
-            )
-        return raw_results[0].plot()
+        return self.predict(image, annotate=True).annotated_frame

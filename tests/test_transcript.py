@@ -14,3 +14,13 @@ def test_transcript_append_undo_clear() -> None:
     assert transcript.text == "Saya"
     transcript.clear()
     assert transcript.text == ""
+
+
+def test_transcript_snapshot_and_append_once() -> None:
+    transcript = TranscriptBuilder()
+
+    assert transcript.append_once("A") is True
+    assert transcript.append_once("A") is False
+
+    assert transcript.snapshot() == ("A",)
+    assert transcript.last_token == "A"

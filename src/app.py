@@ -8,6 +8,7 @@ from pathlib import Path
 import streamlit as st
 
 from sibisee.config import AppSettings, load_settings
+from sibisee.domain.detection import select_primary_detection
 from sibisee.domain.transcript import TranscriptBuilder
 from sibisee.inference.detector import YoloDetector
 from sibisee.inference.model_loader import ModelLoadError, load_encrypted_model
@@ -68,27 +69,28 @@ class VideoRecognitionProcessor:
         self.last_latency_ms = 0.0
         self._lock = threading.Lock()
 
+    def snapshot(self) -> tuple[str | None, float, float]:
+        with self._lock:
+            return self.last_token, self.last_confidence, self.last_latency_ms
+
     def recv(self, frame):
         import av
 
         image = frame.to_ndarray(format="bgr24")
         self.frame_index += 1
         if self.frame_index % self.infer_every_n_frames == 0:
-            result = self.detector.predict(image)
+            result = self.detector.predict(image, annotate=True)
             state = self.decoder.update(result.detections)
-            annotated = self.detector.annotate(image)
             with self._lock:
                 self.last_token = state.stable_token
                 self.last_confidence = state.stable_confidence
                 self.last_latency_ms = result.latency_ms
                 self.transcript.append(state.confirmed_token)
-            return av.VideoFrame.from_ndarray(annotated, format="bgr24")
+            return av.VideoFrame.from_ndarray(result.annotated_frame, format="bgr24")
         return av.VideoFrame.from_ndarray(image, format="bgr24")
 
 
-def _render_static_image(
-    st, detector: YoloDetector, decoder: TemporalDecoder, transcript: TranscriptBuilder, settings: AppSettings
-) -> None:
+def _render_static_image(st, detector: YoloDetector, transcript: TranscriptBuilder, settings: AppSettings) -> None:
     st.subheader("Gambar statis")
     source = st.radio("Sumber gambar", ("Upload file", "Ambil foto"), horizontal=True)
     uploaded = (
@@ -119,15 +121,25 @@ def _render_static_image(
     if st.button("Deteksi sekarang", type="primary"):
         with st.spinner("Memproses gambar..."):
             result = detector.predict(image)
-            state = decoder.update(result.detections)
-            transcript.append(state.confirmed_token or state.stable_token)
+            primary = apply_static_prediction(result, transcript, settings)
             right.write("Hasil deteksi")
             if result.detections:
                 for detection in result.detections:
                     right.info(f"{detection.label} ({detection.confidence:.2f})")
             else:
-                right.warning("Tidak ada gestur stabil yang terdeteksi.")
-            render_transcript_panel(st, transcript, state.stable_token, state.stable_confidence)
+                right.warning("Tidak ada gestur yang terdeteksi.")
+            render_transcript_panel(
+                st,
+                transcript,
+                primary.label if primary else None,
+                primary.confidence if primary else 0.0,
+            )
+
+
+def apply_static_prediction(result, transcript: TranscriptBuilder, settings: AppSettings):
+    primary = select_primary_detection(result.detections, settings.inference.primary_detection_strategy)
+    transcript.append(primary.label if primary else None)
+    return primary
 
 
 def _render_live_camera(
@@ -160,8 +172,29 @@ def _render_live_camera(
     )
     processor = ctx.video_processor
     if processor:
-        render_transcript_panel(st, transcript, processor.last_token, processor.last_confidence)
-        st.caption(f"Latency inferensi terakhir: {processor.last_latency_ms:.1f} ms")
+
+        def render_live_status() -> None:
+            last_token, confidence, latency_ms = processor.snapshot()
+            render_transcript_panel(st, transcript, last_token, confidence)
+            st.caption(f"Latency inferensi terakhir: {latency_ms:.1f} ms")
+
+        if hasattr(st, "fragment"):
+            st.fragment(run_every="1s")(render_live_status)()
+        else:
+            render_live_status()
+
+
+def get_temporal_decoder_for_settings(session_state, settings):
+    fingerprint = (
+        settings.temporal.window_size,
+        settings.temporal.min_matching_frames,
+        settings.temporal.min_average_confidence,
+        settings.temporal.confirmation_cooldown_seconds,
+    )
+    if "temporal_decoder" not in session_state or session_state.get("temporal_settings_fingerprint") != fingerprint:
+        session_state.temporal_decoder = TemporalDecoder(settings.temporal)
+        session_state.temporal_settings_fingerprint = fingerprint
+    return session_state.temporal_decoder
 
 
 def main() -> None:
@@ -190,14 +223,12 @@ def main() -> None:
         st.stop()
 
     transcript = get_transcript(st)
-    if "temporal_decoder" not in st.session_state:
-        st.session_state.temporal_decoder = TemporalDecoder(settings.temporal)
-    decoder = st.session_state.temporal_decoder
+    decoder = get_temporal_decoder_for_settings(st.session_state, settings)
 
     if mode == "Live kamera":
         _render_live_camera(st, detector, decoder, transcript, settings)
     else:
-        _render_static_image(st, detector, decoder, transcript, settings)
+        _render_static_image(st, detector, transcript, settings)
 
     render_footer(st)
 

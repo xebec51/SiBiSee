@@ -27,6 +27,7 @@ class Detection:
 class PredictionResult:
     detections: tuple[Detection, ...]
     latency_ms: float = 0.0
+    annotated_frame: Any | None = None
 
     @property
     def labels(self) -> tuple[str, ...]:
@@ -53,6 +54,14 @@ def dedupe_by_class(detections: tuple[Detection, ...]) -> tuple[Detection, ...]:
         if current is None or detection.confidence > current.confidence:
             best_by_label[detection.label] = detection
     return tuple(sorted(best_by_label.values(), key=lambda item: item.confidence, reverse=True))
+
+
+def select_primary_detection(detections: tuple[Detection, ...], strategy: str = "confidence") -> Detection | None:
+    if not detections:
+        return None
+    if strategy == "area":
+        return max(detections, key=lambda item: ((item.box.area if item.box else 0.0), item.confidence))
+    return max(detections, key=lambda item: (item.confidence, item.box.area if item.box else 0.0))
 
 
 def detections_from_ultralytics(result: Any, names: dict[int, str] | list[str]) -> tuple[Detection, ...]:
