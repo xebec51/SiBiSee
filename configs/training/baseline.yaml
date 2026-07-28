@@ -1,6 +1,7 @@
 run_name: baseline-yolov8s-seed0
 output_dir: artifacts/runs
-model: yolov8s.pt
+model_config: configs/models/yolov8s.yaml
+pretrained_weights: yolov8s.pt
 train_args:
   data: ${SIBISEE_DATASET_YAML}
   epochs: 100

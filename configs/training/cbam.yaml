@@ -1,6 +1,7 @@
 run_name: cbam-yolov8s-seed0
 output_dir: artifacts/runs
-model: configs/training/yolov8s-cbam.yaml
+model_config: configs/models/yolov8s-cbam.yaml
+pretrained_weights: yolov8s.pt
 train_args:
   data: ${SIBISEE_DATASET_YAML}
   epochs: 100

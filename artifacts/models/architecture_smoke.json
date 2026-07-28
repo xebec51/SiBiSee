@@ -1,0 +1,28 @@
+{
+  "baseline": {
+    "config": "configs\\models\\yolov8s.yaml",
+    "detect_input_channels": [
+      128,
+      256,
+      512
+    ],
+    "gflops": 28.816844800000002,
+    "parameters": 11166560
+  },
+  "candidate": {
+    "config": "configs\\models\\yolov8s-cbam.yaml",
+    "detect_input_channels": [
+      128,
+      256,
+      512
+    ],
+    "gflops": 28.869352,
+    "parameters": 11199426
+  },
+  "delta": {
+    "detect_input_channels_equal": true,
+    "gflops": 0.05250719999999731,
+    "parameters": 32866
+  },
+  "image_size": 640
+}

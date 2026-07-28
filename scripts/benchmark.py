@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import statistics
+import sys
 import time
 from pathlib import Path
 
@@ -9,12 +10,20 @@ import numpy as np
 
 from mlops_utils import write_json
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+SRC_ROOT = REPO_ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
 
 def benchmark(
     model_path: Path, output_dir: Path, image_size: int = 640, iterations: int = 100, warmup: int = 10
 ) -> Path:
     from ultralytics import YOLO
 
+    from sibisee.models import register_yolo_modules
+
+    register_yolo_modules()
     model = YOLO(str(model_path))
     sample = np.zeros((image_size, image_size, 3), dtype=np.uint8)
     for _ in range(warmup):

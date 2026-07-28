@@ -1,14 +1,23 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 from mlops_utils import sha256_file, write_json
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+SRC_ROOT = REPO_ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
 
 
 def export_model(model_path: Path, output_dir: Path, fmt: str = "onnx") -> Path:
     from ultralytics import YOLO
 
+    from sibisee.models import register_yolo_modules
+
+    register_yolo_modules()
     output_dir.mkdir(parents=True, exist_ok=True)
     model = YOLO(str(model_path))
     exported = Path(model.export(format=fmt))

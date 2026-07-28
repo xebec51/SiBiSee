@@ -35,6 +35,9 @@ def verify_checksum(path: Path, expected_sha256: str | None) -> None:
 def load_yolo_model(path: Path) -> Any:
     from ultralytics import YOLO
 
+    from sibisee.models import register_yolo_modules
+
+    register_yolo_modules()
     return YOLO(str(path))
 
 
