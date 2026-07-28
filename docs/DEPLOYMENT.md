@@ -6,6 +6,18 @@
 .\.venv\Scripts\streamlit.exe run src\app.py
 ```
 
+Install CPU deployment dependencies with:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-app.txt
+```
+
+Install GPU local dependencies only on a compatible NVIDIA machine:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-gpu.txt
+```
+
 ## Secrets
 
 Tambahkan `.streamlit/secrets.toml` dari template:
@@ -20,6 +32,7 @@ AUTH_TOKEN = "replace-with-twilio-auth-token"
 ```
 
 Twilio opsional. Model key wajib jika artifact produksi tetap terenkripsi.
+For local non-Streamlit smoke tests, set `SIBISEE_MODEL_ENCRYPTION_KEY` instead of passing the key as a CLI argument.
 
 ## Production Notes
 

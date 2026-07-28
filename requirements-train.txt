@@ -1,4 +1,4 @@
--r requirements-app.txt
+-r requirements-app-base.txt
 ipykernel==6.29.5
 jupyter==1.1.1
 matplotlib==3.9.2

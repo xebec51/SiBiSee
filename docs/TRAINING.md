@@ -22,4 +22,17 @@ Dataset lokal harus ditentukan:
 $env:SIBISEE_DATASET_YAML = "D:\path\to\dataset\data.yaml"
 ```
 
+For GPU training on the local RTX 4060 Ti PC:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-gpu.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements-train.txt
+```
+
+For CPU-only CI or smoke tests:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+```
+
 Baseline dan CBAM harus memakai split, seed, image size, optimizer, scheduler, augmentation, dan training budget yang identik. Test set tidak boleh digunakan untuk memilih hyperparameter.

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import threading
 from pathlib import Path
 
@@ -26,7 +27,7 @@ LOGGER = logging.getLogger(__name__)
 @st.cache_resource(show_spinner=False)
 def cached_detector(settings: AppSettings, confidence_threshold: float) -> YoloDetector:
     model_security = st.secrets.get("model_security", {}) if hasattr(st.secrets, "get") else {}
-    key = model_security.get("ENCRYPTION_KEY")
+    key = model_security.get("ENCRYPTION_KEY") or os.getenv("SIBISEE_MODEL_ENCRYPTION_KEY")
     inference_settings = settings.inference.__class__(
         image_size=settings.inference.image_size,
         infer_every_n_frames=settings.inference.infer_every_n_frames,

@@ -23,6 +23,12 @@ python -m venv .venv
 Copy-Item .streamlit\secrets.toml.example .streamlit\secrets.toml
 ```
 
+`requirements-app.txt` dan `requirements.txt` memakai PyTorch CPU wheel untuk deployment. Untuk PC lokal dengan RTX 4060 Ti dan CUDA 12.1 runtime PyTorch, gunakan profile GPU:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-gpu.txt
+```
+
 Isi `.streamlit/secrets.toml` dengan key model dan credential Twilio bila dipakai. Jangan commit file secrets.
 
 ## Menjalankan Aplikasi
@@ -70,6 +76,8 @@ Training reproducible memakai file YAML di `configs/training/`.
 
 ```powershell
 $env:SIBISEE_DATASET_YAML = "D:\path\to\dataset\data.yaml"
+.\.venv\Scripts\python.exe -m pip install -r requirements-gpu.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements-train.txt
 .\.venv\Scripts\python.exe scripts\train.py --config configs\training\baseline.yaml
 .\.venv\Scripts\python.exe scripts\evaluate.py --model artifacts\runs\baseline-yolov8s-seed0\weights\best.pt --data $env:SIBISEE_DATASET_YAML
 .\.venv\Scripts\python.exe scripts\benchmark.py --model artifacts\runs\baseline-yolov8s-seed0\weights\best.pt

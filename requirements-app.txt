@@ -1,12 +1,4 @@
---extra-index-url https://download.pytorch.org/whl/cu121
-av==14.0.1
-cryptography==49.0.0
-numpy==1.26.4
-opencv-python-headless==4.10.0.84
-pillow==12.3.0
-streamlit==1.54.0
-streamlit-webrtc==0.47.9
-torch==2.5.1+cu121
-torchvision==0.20.1+cu121
-twilio==9.3.6
-ultralytics==8.3.40
+-r requirements-app-base.txt
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.5.1+cpu
+torchvision==0.20.1+cpu

@@ -1,0 +1,9 @@
+av==14.0.1
+cryptography==49.0.0
+numpy==1.26.4
+opencv-python-headless==4.10.0.84
+pillow==12.3.0
+streamlit==1.54.0
+streamlit-webrtc==0.47.9
+twilio==9.3.6
+ultralytics==8.3.40
