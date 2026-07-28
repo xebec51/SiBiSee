@@ -1,149 +1,104 @@
-# SiBiSee: Real-time SIBI Detection with YOLOv8-CBAM 👋
+# SiBiSee
 
-[![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python&logoColor=white)](https://www.python.org/)
-[![Streamlit](https://img.shields.io/badge/Streamlit-1.31-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
-[![YOLOv8](https://img.shields.io/badge/YOLOv8-Ultralytics-purple?logo=yolo)](https://github.com/ultralytics/ultralytics)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.0-red?logo=pytorch&logoColor=white)](https://pytorch.org/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+SiBiSee adalah aplikasi Streamlit untuk pengenalan gestur SIBI terisolasi secara real-time menggunakan model YOLO. Aplikasi mendukung live camera WebRTC, upload/camera snapshot, validasi gambar, temporal stabilization, dan transcript builder.
 
-**SiBiSee** is a web-based application designed to bridge the communication gap for the Deaf community by translating **Indonesian Sign Language (SIBI)** into text in real-time. This project integrates the **Convolutional Block Attention Module (CBAM)** into the **YOLOv8** architecture to enhance detection accuracy, especially for complex hand gestures and dynamic backgrounds.
+Status saat ini: codebase sudah dimodularisasi dan dites, model produksi masih artifact terenkripsi `models/best.pt.enc`. Training ulang dan klaim peningkatan akurasi belum dijalankan ulang karena dataset lokal tidak ditemukan di workspace ini.
 
-🔗 **Live Demo:** [Click Here to Open App](https://sibisee.streamlit.app)
+## Kelas
 
----
+Gambar panduan saat ini memuat 49 kelas:
 
-## 📸 Screenshots
+- Alfabet: A, B, C, D, E, F, G, H, I, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z
+- Angka: Satu, Dua, Tiga, Empat, Lima, Enam, Tujuh, Delapan, Sembilan
+- Kata: Bodoh, Cinta, Jahat, Kamu, Kasih, Maaf, Makan, Masuk, Minum, Nama, Rumah, Saya, Terima, Tidur, Tolong
 
-| Real-time Detection | Confusion Matrix |
-| :---: | :---: |
-| <img src="assets/hasil_prediksi.jpg" width="100%" alt="Detection Result"> | <img src="assets/confusion_matrix.png" width="100%" alt="Confusion Matrix"> |
+Gestur dinamis seperti J dan Z perlu evaluasi temporal terpisah; model single-frame tidak boleh diklaim menangani tata bahasa SIBI lengkap.
 
----
+## Instalasi
 
-## ✨ Key Features
-
-* **🎥 Real-time Video Detection:** Uses WebRTC to stream video directly from the browser to the model with low latency.
-* **📷 Dual Input Mode:** Supports both live camera streaming and static image uploads (file/snapshot).
-* **🧠 Attention Mechanism:** Integrated CBAM (Channel & Spatial Attention) allows the model to focus on fine-grained finger details.
-* **⚡ Optimized for Web:** Deployed on Streamlit Cloud with Twilio TURN servers for stable connectivity across different networks.
-
----
-
-## 📂 Dataset Details
-
-The model was trained using the **SIBI - v2 SIBI** dataset, sourced publicly from **Roboflow Universe**. This dataset provides a comprehensive collection of hand gestures representing the Indonesian Sign Language alphabet.
-
-* **Dataset Name:** SIBI - v2 SIBI
-* **Source Link:** [Click here to view on Roboflow](https://universe.roboflow.com/sibi-detection-nftzq/sibi-bieme/dataset/2)
-* **Total Images:** 4,802 images
-* **Classes:** 26 Classes (Alphabets A-Z)
-* **Format:** YOLOv8 Oriented Bounding Boxes (OBB) / Standard Object Detection
-* **Preprocessing:** Auto-orientation and pixel normalization (640x640 px)
-
-### Data Split Strategy
-To ensure objective evaluation, the dataset was split into three subsets:
-
-| Subset | Image Count | Percentage | Purpose |
-| :--- | :---: | :---: | :--- |
-| **Train** | 3,361 | 70% | Model learning and weight updates |
-| **Validation** | 961 | 20% | Hyperparameter tuning and metric monitoring |
-| **Test** | 480 | 10% | Final performance evaluation (unseen data) |
-
----
-
-## 📊 Model Performance
-
-The model was trained from scratch for **100 epochs** on a dataset of 4,802 SIBI images. The integration of CBAM showed significant improvements in **Precision**, reducing false positives in similar gestures (e.g., 'M' vs 'N').
-
-| Metric | YOLOv8s (Baseline) | **SiBiSee (YOLOv8s-CBAM)** |
-| :--- | :---: | :---: |
-| **mAP@0.5** | 99.2% | **99.0%** |
-| **mAP@0.5:0.95** | 88.6% | **88.3%** |
-| **Precision** | 97.7% | **97.8%** 🔼 |
-| **Recall** | 98.1% | **97.5%** |
-
-> **Note:** The proposed model achieves competitive accuracy while being trained purely from scratch, demonstrating strong feature learning capabilities without relying on pre-trained COCO weights.
-
----
-
-## 🛠️ Tech Stack
-
-* **Core:** Python 3.11
-* **Computer Vision:** YOLOv8 (Ultralytics), OpenCV, Pillow
-* **Deep Learning Framework:** PyTorch
-* **Web Framework:** Streamlit, Streamlit-WebRTC
-* **Infrastructure:** Twilio (TURN Server), Streamlit Cloud
-
----
-
-## 🚀 Local Installation
-
-If you want to run this project on your local machine, follow these steps:
-
-### 1. Clone the Repository
-```bash
-git clone https://github.com/xebec51/SiBiSee.git
-cd SiBiSee
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -r requirements-app.txt
+Copy-Item .streamlit\secrets.toml.example .streamlit\secrets.toml
 ```
 
-### 2. Create a Virtual Environment
+Isi `.streamlit/secrets.toml` dengan key model dan credential Twilio bila dipakai. Jangan commit file secrets.
 
-```bash
-# Windows
-python -m venv venv
-.\venv\Scripts\activate
+## Menjalankan Aplikasi
 
-# Mac/Linux
-python3 -m venv venv
-source venv/bin/activate
+```powershell
+.\.venv\Scripts\streamlit.exe run src\app.py
 ```
 
-### 3. Install Dependencies
+Twilio bersifat opsional; jika tidak tersedia, aplikasi memakai fallback STUN publik. Key model wajib untuk memuat `models/best.pt.enc`.
 
-```bash
-pip install -r requirements.txt
+## Development
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+.\.venv\Scripts\python.exe -m ruff check .
+.\.venv\Scripts\python.exe -m ruff format --check .
+.\.venv\Scripts\python.exe -m pytest
+.\.venv\Scripts\python.exe -m pip_audit
 ```
 
-### 4. Run the Application
+Secret scan:
 
-```bash
-streamlit run src/app.py
+```powershell
+$files = git ls-files | Where-Object { $_ -notmatch '^(assets/|models/best\.pt\.enc|docs/Laporan_Akhir_SiBiSee\.pdf)' }
+.\.venv\Scripts\detect-secrets.exe scan --no-verify @files
 ```
 
-> **Tip:** For local development, the app will use Google's public STUN server by default. For production-grade reliability, configure your Twilio credentials in `.streamlit/secrets.toml`.
+## Dataset
 
----
+Dataset yang disebut proyek lama berasal dari Roboflow Universe `sibi-detection-nftzq/sibi-bieme` version 2. Dataset tidak disimpan di Git.
 
-## 📂 Project Structure
+Audit dataset:
+
+```powershell
+$env:SIBISEE_DATASET_DIR = "D:\path\to\dataset"
+.\.venv\Scripts\python.exe scripts\build_manifest.py
+.\.venv\Scripts\python.exe scripts\create_splits.py
+```
+
+Output audit disimpan di `artifacts/dataset/`.
+
+## Training dan Evaluasi
+
+Training reproducible memakai file YAML di `configs/training/`.
+
+```powershell
+$env:SIBISEE_DATASET_YAML = "D:\path\to\dataset\data.yaml"
+.\.venv\Scripts\python.exe scripts\train.py --config configs\training\baseline.yaml
+.\.venv\Scripts\python.exe scripts\evaluate.py --model artifacts\runs\baseline-yolov8s-seed0\weights\best.pt --data $env:SIBISEE_DATASET_YAML
+.\.venv\Scripts\python.exe scripts\benchmark.py --model artifacts\runs\baseline-yolov8s-seed0\weights\best.pt
+```
+
+Model baru hanya boleh dipromosikan setelah test set dan benchmark deployment memenuhi rule di `docs/BENCHMARK.md`.
+
+## Struktur
 
 ```text
-SiBiSee/
-├── assets/             # Images for README (screenshots, charts)
-├── docs/               # Final Report (PDF)
-├── models/             # Trained YOLOv8 weights (.pt)
-├── notebooks/          # Jupyter Notebooks for training experiments
-├── src/                # Source code for the Web App
-│   └── app.py          # Main Streamlit application
-├── .gitignore          # Git ignore rules
-├── packages.txt        # Linux dependencies for Streamlit Cloud
-├── README.md           # Project documentation
-└── requirements.txt    # Python dependencies
+src/
+  app.py
+  sibisee/
+    config.py
+    logging_config.py
+    domain/
+    inference/
+    services/
+    ui/
+scripts/
+configs/training/
+tests/
+docs/
 ```
 
----
+## Security
 
-## 👨‍💻 About the Author
+Notebook lama pernah memuat Roboflow API key plaintext. Notebook aktif sudah disanitasi, tetapi histori publik masih perlu dibersihkan dengan `git-filter-repo` setelah pemilik repository memastikan key lama sudah direvoke. Detail ada di `SECURITY.md`.
 
-**Muh. Rinaldi Ruslan** *Information Systems Student at Hasanuddin University*
+## License
 
-A passionate software developer combining clean code with data intelligence to create impactful digital solutions.
-
----
-
-## 📜 License
-
-This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
-
-<p align="center">
-<small>Built with ❤️ using Streamlit and YOLOv8</small>
-</p>
+MIT License. Lihat `LICENSE`.
