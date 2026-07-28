@@ -81,9 +81,9 @@ Training reproducible memakai file YAML di `configs/training/`.
 $env:SIBISEE_DATASET_YAML = "D:\path\to\dataset\data.yaml"
 .\.venv\Scripts\python.exe -m pip install -r requirements-gpu.txt
 .\.venv\Scripts\python.exe -m pip install -r requirements-train.txt
-.\.venv\Scripts\python.exe scripts\train.py --config configs\training\baseline.yaml
-.\.venv\Scripts\python.exe scripts\evaluate.py --model artifacts\runs\baseline-yolov8s-seed0\weights\best.pt --data $env:SIBISEE_DATASET_YAML
-.\.venv\Scripts\python.exe scripts\benchmark.py --model artifacts\runs\baseline-yolov8s-seed0\weights\best.pt
+.\.venv\Scripts\python.exe scripts\run_experiments.py --stage screening --models baseline cbam light --seeds 0
+.\.venv\Scripts\python.exe scripts\evaluate.py --model artifacts\experiments\screening\runs\screening-baseline-seed0\weights\best.pt --data $env:SIBISEE_DATASET_YAML
+.\.venv\Scripts\python.exe scripts\benchmark.py --model artifacts\experiments\screening\runs\screening-baseline-seed0\weights\best.pt
 ```
 
 Model baru hanya boleh dipromosikan setelah test set dan benchmark deployment memenuhi rule di `docs/BENCHMARK.md`.

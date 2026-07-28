@@ -35,4 +35,24 @@ For CPU-only CI or smoke tests:
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 ```
 
-Baseline dan CBAM harus memakai split, seed, image size, optimizer, scheduler, augmentation, dan training budget yang identik. Test set tidak boleh digunakan untuk memilih hyperparameter.
+Baseline, CBAM, dan kandidat ringan harus memakai split, initialization source, seed, image size, optimizer, scheduler, augmentation, dan training budget yang identik. Test set tidak boleh digunakan untuk memilih hyperparameter.
+
+Screening:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_experiments.py `
+  --stage screening `
+  --models baseline cbam light `
+  --seeds 0
+```
+
+Final multi-seed hanya boleh dijalankan setelah dataset audit, split leakage-aware, dan screening selesai:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_experiments.py `
+  --stage final `
+  --models baseline cbam `
+  --seeds 0 42 1337
+```
+
+Gunakan `--plan-only` untuk memeriksa config yang akan dibuat tanpa menjalankan training.
