@@ -1,6 +1,13 @@
 # Real-World Holdout Protocol
 
-Status: holdout belum tersedia di repository ini, sehingga generalisasi dunia nyata belum boleh diklaim.
+Status: NOT RUN - intentionally excluded from the current release scope.
+
+Real-world holdout is not release evidence for v2.0.0. The current release is based on the dataset audit,
+leakage-aware split, final multi-seed validation, one internal-test evaluation, PyTorch benchmark, production
+packaging, app smoke tests, deployment smoke tests, QA, CI, and secret scanning.
+
+The model has not been validated on new real-world participants, cameras, lighting, backgrounds, distances, or
+devices. Internal validation and internal-test metrics do not guarantee real-world performance.
 
 Minimum collection criteria:
 
@@ -98,3 +105,4 @@ Evaluation rule:
 - Report aggregate and per-class metrics separately from internal test metrics.
 - Do not tune hyperparameters after viewing holdout results unless a new locked holdout is created.
 - Do not package, encrypt, deploy, or tag a new production model until the holdout gate is documented.
+- For v2.0.0, the documented holdout status is `NOT RUN - intentionally excluded from the current release scope`.

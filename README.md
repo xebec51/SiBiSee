@@ -2,7 +2,9 @@
 
 SiBiSee adalah aplikasi Streamlit untuk pengenalan gestur SIBI terisolasi secara real-time menggunakan model YOLO. Aplikasi mendukung live camera WebRTC, upload/camera snapshot, validasi gambar, temporal stabilization, dan transcript builder.
 
-Status saat ini: codebase sudah dimodularisasi dan dites, model produksi masih artifact terenkripsi `models/best.pt.enc`. Training ulang dan klaim peningkatan akurasi belum dijalankan ulang karena dataset lokal tidak ditemukan di workspace ini.
+Status release: model produksi yang dipilih adalah YOLOv8s-CBAM seed 42, dikemas sebagai artifact terenkripsi `models/best.pt.enc` dengan backend PyTorch. Release ini memakai evidence dataset audit, leakage-aware split, final multi-seed validation, satu kali internal-test evaluation, benchmark PyTorch, packaging, smoke test, QA, CI, dan secret scan.
+
+Real-world holdout: NOT RUN - intentionally excluded from the current release scope. Model belum tervalidasi untuk participant, kamera, pencahayaan, background, jarak, atau device baru. Jangan mengklaim generalisasi dunia nyata dari hasil internal test.
 
 ## Kelas
 
@@ -12,7 +14,7 @@ Gambar panduan saat ini memuat 49 kelas:
 - Angka: Satu, Dua, Tiga, Empat, Lima, Enam, Tujuh, Delapan, Sembilan
 - Kata: Bodoh, Cinta, Jahat, Kamu, Kasih, Maaf, Makan, Masuk, Minum, Nama, Rumah, Saya, Terima, Tidur, Tolong
 
-Gestur dinamis seperti J dan Z perlu evaluasi temporal terpisah; model single-frame tidak boleh diklaim menangani tata bahasa SIBI lengkap.
+Gestur dinamis seperti J dan Z perlu evaluasi temporal terpisah; model single-frame tidak boleh diklaim menangani tata bahasa SIBI lengkap. SiBiSee adalah aplikasi portfolio/research untuk isolated SIBI sign recognition, bukan penerjemah bahasa isyarat lengkap dan bukan sistem keselamatan atau aksesibilitas kritis.
 
 ## Instalasi
 
@@ -86,7 +88,7 @@ $env:SIBISEE_DATASET_YAML = "D:\path\to\dataset\data.yaml"
 .\.venv\Scripts\python.exe scripts\benchmark.py --model artifacts\experiments\screening\runs\screening-baseline-seed0\weights\best.pt
 ```
 
-Model baru hanya boleh dipromosikan setelah test set dan benchmark deployment memenuhi rule di `docs/BENCHMARK.md`.
+Model v2.0.0 dipromosikan berdasarkan model-selection freeze dan internal-test evaluation yang sudah dibuka sekali. Jangan menjalankan tuning tambahan berdasarkan internal test.
 
 ## Struktur
 
@@ -108,7 +110,7 @@ docs/
 
 ## Security
 
-Notebook lama pernah memuat Roboflow API key plaintext. Notebook aktif sudah disanitasi, tetapi histori publik masih perlu dibersihkan dengan `git-filter-repo` setelah pemilik repository memastikan key lama sudah direvoke. Detail ada di `SECURITY.md`.
+Notebook lama pernah memuat Roboflow API key plaintext. Key lama telah direvoke dan history repository sudah dibersihkan pada upgrade ini. Detail ada di `SECURITY.md`.
 
 ## License
 

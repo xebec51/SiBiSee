@@ -1,6 +1,6 @@
 # Final Training Results
 
-This document records the completed final multi-seed training pass. It does not promote a production artifact and does not claim real-world generalization.
+This document records the completed final multi-seed training pass and internal-test evaluation. It does not claim real-world generalization.
 
 ## Protocol
 
@@ -84,10 +84,17 @@ CBAM seed 42 is the best accuracy candidate from the completed protocol and is t
 
 The lightweight model remains valuable for CPU deployment: it is much smaller and materially faster on CPU, but its mean validation mAP50-95 is 0.00583 lower than CBAM. It should only replace CBAM if deployment constraints outweigh that accuracy gap or if a real-world holdout shows a clearer trade-off.
 
+## Release Scope
+
+- Production backend: PyTorch.
+- ONNX export/parity: NOT RUN - not required by the selected PyTorch deployment backend.
+- Real-world holdout: NOT RUN - intentionally excluded from the current release scope.
+- Real-world generalization: NOT CLAIMED.
+
+This release is a portfolio/research application for isolated SIBI sign recognition. It is not a complete sign-language translator and must not be used as a safety-critical or accessibility-critical system.
+
 ## Remaining Gates
 
-- Real-world holdout has not been evaluated.
-- ONNX export parity has not been validated.
 - A production encrypted artifact has not been created.
 - Streamlit secrets have not been updated with a new model encryption key.
 - Clean-start app smoke test with the new artifact has not been run.
