@@ -47,6 +47,7 @@ Screening:
   --data artifacts\dataset\sibisee_splits.yaml `
   --dataset-manifest artifacts\dataset\manifest.csv `
   --split-manifest artifacts\dataset\split_manifest.csv `
+  --output-dir artifacts\experiments-screening-v2 `
   --device 0 `
   --workers 4
 ```
@@ -61,6 +62,7 @@ Final multi-seed hanya boleh dijalankan setelah dataset audit, split leakage-awa
   --data artifacts\dataset\sibisee_splits.yaml `
   --dataset-manifest artifacts\dataset\manifest.csv `
   --split-manifest artifacts\dataset\split_manifest.csv `
+  --output-dir artifacts\experiments-screening-v2 `
   --device 0 `
   --workers 4
 ```

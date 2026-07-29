@@ -90,3 +90,18 @@ Recommended final-stage candidates:
 `baseline` is retained as reference but is not Pareto-preferred in this screening result: it is less accurate than CBAM and less efficient than the lightweight model.
 
 Final multi-seed training, internal test evaluation, ONNX parity, real-world holdout, and production artifact promotion are still not complete.
+
+Use the same experiment output root as the validated screening pass when launching final training:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_experiments.py `
+  --stage final `
+  --models cbam light `
+  --seeds 0 42 1337 `
+  --data artifacts\dataset\sibisee_splits.yaml `
+  --dataset-manifest artifacts\dataset\manifest.csv `
+  --split-manifest artifacts\dataset\split_manifest.csv `
+  --output-dir artifacts\experiments-screening-v2 `
+  --device 0 `
+  --workers 4
+```
