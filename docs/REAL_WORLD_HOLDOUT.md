@@ -50,8 +50,51 @@ Dry-run smoke:
   --dry-run
 ```
 
+Validation gate:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\validate_holdout.py `
+  --holdout-dir D:\Datasets\SiBiSee-Holdout `
+  --dataset-dir D:\Datasets\SiBiSee `
+  --data artifacts\dataset\sibisee_splits.yaml `
+  --output-dir artifacts\private\holdout-validation
+```
+
+The validator writes private, ignored artifacts:
+
+- `summary.json`
+- `class-coverage.csv`
+- `session-coverage.csv`
+- `duplicate-groups.csv`
+- `dataset-overlap.csv`
+- `image-errors.csv`
+- `sensitive-metadata.csv`
+
+The gate blocks evaluation when metadata is missing, paths are unsafe, images are missing/corrupt,
+class labels are unknown, private contact-like metadata is detected, exact/near duplicates are present,
+or any exact image overlaps the training/validation/test dataset. It also checks that collection covers
+multiple participants, sessions, devices, backgrounds, lighting conditions, distances, and every class.
+
+Evaluation after the gate passes:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\evaluate_holdout.py `
+  --model artifacts\experiments-screening-v2\final\runs\final-cbam-seed42\weights\best.pt `
+  --holdout-dir D:\Datasets\SiBiSee-Holdout `
+  --data artifacts\dataset\sibisee_splits.yaml `
+  --output-dir artifacts\private\holdout-evaluation\cbam-seed42 `
+  --device 0
+```
+
+`scripts/evaluate_holdout.py` uses the production inference threshold and primary-detection strategy by
+default: confidence threshold `0.4`, IoU threshold `0.7`, max detections `5`, image size `640`, and primary
+selection by confidence. It writes aggregate metrics, per-class precision/recall/F1, confusion pairs,
+group metrics by capture condition, private raw predictions, and latency. The evaluation is image-level:
+each holdout image contributes one expected class and one primary predicted class or `<no_detection>`.
+
 Evaluation rule:
 
 - Use the real-world holdout only after internal model selection is frozen.
 - Report aggregate and per-class metrics separately from internal test metrics.
 - Do not tune hyperparameters after viewing holdout results unless a new locked holdout is created.
+- Do not package, encrypt, deploy, or tag a new production model until the holdout gate is documented.
