@@ -1,10 +1,23 @@
 from __future__ import annotations
 
+import json
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PRODUCTION_METADATA_PATH = PROJECT_ROOT / "models" / "best.metadata.json"
+
+
+def _metadata_model_sha256(metadata_path: Path = PRODUCTION_METADATA_PATH) -> str | None:
+    if not metadata_path.exists():
+        return None
+    try:
+        payload = json.loads(metadata_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    value = payload.get("encrypted_artifact_sha256")
+    return str(value) if value else None
 
 
 def _env_int(name: str, default: int) -> int:
@@ -47,9 +60,7 @@ class TemporalSettings:
 @dataclass(frozen=True)
 class SecuritySettings:
     encrypted_model_path: Path = PROJECT_ROOT / "models" / "best.pt.enc"
-    model_sha256: str | None = (
-        "9f58c1af732e6817efb3776842667d72d98fb37c9a336a049fbd1d5b19da8661"  # pragma: allowlist secret
-    )
+    model_sha256: str | None = field(default_factory=_metadata_model_sha256)
     max_upload_mb: int = 8
     max_image_pixels: int = 12_000_000
 
@@ -82,10 +93,7 @@ def load_settings() -> AppSettings:
     )
     security = SecuritySettings(
         encrypted_model_path=Path(os.getenv("SIBISEE_MODEL_PATH", str(PROJECT_ROOT / "models" / "best.pt.enc"))),
-        model_sha256=os.getenv(
-            "SIBISEE_MODEL_SHA256",
-            "9f58c1af732e6817efb3776842667d72d98fb37c9a336a049fbd1d5b19da8661",  # pragma: allowlist secret
-        ),
+        model_sha256=os.getenv("SIBISEE_MODEL_SHA256") or _metadata_model_sha256(),
         max_upload_mb=max(1, _env_int("SIBISEE_MAX_UPLOAD_MB", 8)),
         max_image_pixels=max(1, _env_int("SIBISEE_MAX_IMAGE_PIXELS", 12_000_000)),
     )
