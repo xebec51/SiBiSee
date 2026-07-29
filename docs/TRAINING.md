@@ -69,4 +69,6 @@ Final multi-seed hanya boleh dijalankan setelah dataset audit, split leakage-awa
 
 Gunakan `--plan-only` untuk memeriksa config yang akan dibuat tanpa menjalankan training.
 
-Screening used one seed only and 25 epochs. All three candidates reached their best validation mAP50-95 at epoch 25, so final training should use a longer fixed budget or an identical early-stopping rule for every candidate.
+Screening used one seed only and 25 epochs. All three candidates reached their best validation mAP50-95 at epoch 25, so final training used 150 epochs with identical early stopping patience 25.
+
+Final multi-seed training completed for `cbam` and `light`. The selected accuracy candidate is `final-cbam-seed42`; internal test evaluation has been run once for that checkpoint. Do not use the internal test set for additional hyperparameter tuning.

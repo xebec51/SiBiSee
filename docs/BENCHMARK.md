@@ -65,4 +65,15 @@ Model baru hanya boleh dipromosikan bila memenuhi salah satu:
 2. Mean test mAP50-95 berada dalam sekitar 0.2 percentage point dari model terbaik, tetapi CPU latency atau ukuran artifact membaik minimal sekitar 20%.
 3. Real-world holdout membaik jelas dan trade-off terdokumentasi.
 
-Belum ada benchmark final multi-seed karena final training, internal test evaluation, holdout evaluation, and production promotion have not been completed.
+## Final Candidate Benchmark
+
+Final PyTorch benchmark was run after multi-seed training. Batch size 1, image size 640, 10 warm-up iterations, and 100 measured iterations were used.
+
+| Model | Device | Mean ms | Median ms | p95 ms | FPS | Artifact size |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| CBAM seed 42 | RTX 4060 Ti | 10.59 | 11.20 | 12.30 | 94.44 | 22,632,276 bytes |
+| CBAM seed 42 | CPU | 73.80 | 68.12 | 102.80 | 13.55 | 22,632,276 bytes |
+| Lightweight seed 1337 | RTX 4060 Ti | 10.46 | 10.85 | 11.64 | 95.57 | 6,278,179 bytes |
+| Lightweight seed 1337 | CPU | 37.70 | 36.58 | 47.26 | 26.52 | 6,278,179 bytes |
+
+ONNX was not benchmarked because export parity validation has not been completed.

@@ -16,17 +16,18 @@ Model tidak boleh diklaim menerjemahkan tata bahasa SIBI lengkap, percakapan kon
 
 ## Evaluation
 
-Current evidence is screening only, not final model selection. No production artifact has been replaced.
+No production artifact has been replaced.
 
-Validation screening on the leakage-aware split, seed 0, 25 epochs:
+Final validation, leakage-aware split, seeds 0/42/1337:
 
 | Model | Precision | Recall | mAP50 | mAP50-95 | Parameters | GFLOPs |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| YOLOv8s baseline | 0.7644 | 0.7712 | 0.8931 | 0.7695 | 11,166,560 | 28.82 |
-| YOLOv8s-CBAM | 0.8084 | 0.7640 | 0.9084 | 0.7800 | 11,199,426 | 28.87 |
-| YOLOv8n lightweight | 0.6637 | 0.7827 | 0.8718 | 0.7417 | 3,157,200 | 8.86 |
+| YOLOv8s-CBAM mean | 0.8492 | 0.8788 | 0.9484 | 0.8389 | 11,199,426 | 28.87 |
+| YOLOv8n lightweight mean | 0.8510 | 0.8525 | 0.9511 | 0.8330 | 3,157,200 | 8.86 |
 
-CBAM is the strongest accuracy candidate in this single-seed screening. The lightweight model is the strongest deployment-efficiency candidate because it has much lower CPU latency and a much smaller checkpoint. Final multi-seed training and internal test evaluation are still required before any production promotion.
+Selected production candidate before test evaluation: YOLOv8s-CBAM seed 42. Internal test result for that checkpoint: precision 0.9400, recall 0.9295, mAP50 0.9659, mAP50-95 0.8472.
+
+The lightweight model is the strongest deployment-efficiency candidate because it has much lower CPU latency and a much smaller checkpoint. Production promotion still requires model packaging/encryption, app smoke testing, and real-world holdout review.
 
 ## Limitations
 
