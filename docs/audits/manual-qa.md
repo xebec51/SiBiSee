@@ -9,15 +9,16 @@ Implementation status:
 - Recognition processor exposes a lock-protected snapshot for token, confidence, and latency.
 - Each processed frame performs exactly one model inference; annotation is plotted from the same raw result.
 
-Manual verification status:
+Manual verification status for release packaging:
 
-- Full live camera verification was not completed in this session because the production model encryption key was not available locally.
-- `scripts/check_model_compatibility.py` stopped with `SIBISEE_MODEL_ENCRYPTION_KEY belum dikonfigurasi; compatibility smoke tidak dijalankan.`
-
-Required manual QA after configuring secrets:
-
-1. Run `streamlit run src/app.py`.
-2. Start live camera mode.
-3. Confirm transcript, confidence, and latency update without pressing another widget.
-4. Confirm CPU usage stays stable and no busy loop is created.
-5. Confirm transcript undo, clear, and download still work during and after live inference.
+| Check | Status | Evidence |
+| --- | --- | --- |
+| Encrypted artifact compatibility | PASS | `scripts/check_model_compatibility.py` loaded `models/best.pt.enc`, verified checksum/decrypt/load, 49 classes, one inference, and `temporary_model_dirs_remaining: 0`. |
+| Streamlit startup | PASS | Headless local server on `127.0.0.1:8510` returned HTTP 200 with `SIBISEE_MODEL_ENCRYPTION_KEY` configured. |
+| Static image workflow | PASS | Regression tests cover static primary detection without temporal window and duplicate transcript prevention on rerun. |
+| Invalid file rejection | PASS | Regression tests cover upload validation. |
+| One inference per static image/live processed frame | PASS | Regression tests cover detector/model call count and live processor single predict per processed frame. |
+| Transcript undo/clear/download | PASS | Regression tests cover transcript behavior. |
+| Temporal settings reset | PASS | Regression test confirms `TemporalDecoder` is recreated when settings fingerprint changes. |
+| Twilio fallback | PASS | Regression tests cover fallback STUN behavior. |
+| Live camera browser interaction | NOT RUN | No physical browser/camera interaction was performed in this headless smoke. WebRTC code path remains covered by processor tests, not a live-device manual test. |

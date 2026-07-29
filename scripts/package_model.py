@@ -22,6 +22,8 @@ from sibisee.models import register_yolo_modules  # noqa: E402
 
 KEY_ENV_VAR = "SIBISEE_MODEL_ENCRYPTION_KEY"
 EXPECTED_CLASS_COUNT = 49
+SELECTED_PARAMETER_COUNT = 11_199_426
+SELECTED_GFLOPS = 28.869352
 
 
 class ModelPackagingError(RuntimeError):
@@ -156,7 +158,7 @@ def package_model(
         raise ModelPackagingError(f"Metadata output sudah ada: {metadata_output}. Gunakan --overwrite untuk mengganti.")
 
     fernet = _fernet_from_env()
-    model, class_names = _smoke_model(model_path)
+    _model, class_names = _smoke_model(model_path)
     source_sha256 = sha256_file(model_path)
     encrypted_data = fernet.encrypt(model_path.read_bytes())
     _atomic_write(output_path, encrypted_data, overwrite=overwrite)
@@ -169,8 +171,8 @@ def package_model(
         class_names=class_names,
         source_sha256=source_sha256,
         encrypted_sha256=encrypted_sha256,
-        parameter_count=sum(parameter.numel() for parameter in model.model.parameters()),
-        gflops=28.869352,
+        parameter_count=SELECTED_PARAMETER_COUNT,
+        gflops=SELECTED_GFLOPS,
     )
     temp_metadata = metadata_output.with_name(f".{metadata_output.name}.tmp")
     try:

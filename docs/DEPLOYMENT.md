@@ -38,5 +38,32 @@ For local non-Streamlit smoke tests, set `SIBISEE_MODEL_ENCRYPTION_KEY` instead 
 
 - Jangan deploy `.env` atau secrets template yang sudah diisi.
 - Jangan deploy dataset atau run training.
-- Verifikasi checksum `models/best.pt.enc` sebelum startup.
+- Verifikasi checksum `models/best.pt.enc` sebelum startup. Runtime membaca checksum dari `models/best.metadata.json`; `SIBISEE_MODEL_SHA256` tetap tersedia sebagai override eksplisit.
 - Gunakan HTTPS untuk WebRTC camera access.
+- Backend produksi v2.0.0 adalah PyTorch. ONNX export/parity: NOT RUN - not required.
+
+## Deployment Secret
+
+Masukkan Fernet key produksi ke deployment secrets, bukan ke repository:
+
+```toml
+[model_security]
+ENCRYPTION_KEY = "paste-key-from-clipboard"
+```
+
+Jangan mengirim key melalui chat, issue, commit, atau log. Setelah secret tersimpan dan deployment direstart,
+hapus key lokal:
+
+```powershell
+Remove-Item Env:\SIBISEE_MODEL_ENCRYPTION_KEY -ErrorAction SilentlyContinue
+Set-Clipboard -Value " " -ErrorAction SilentlyContinue
+```
+
+## Rollback
+
+Rollback artifact membutuhkan pasangan artifact dan key yang cocok:
+
+1. Kembalikan `models/best.pt.enc` dan `models/best.metadata.json` dari commit/tag release sebelumnya.
+2. Kembalikan deployment secret `model_security.ENCRYPTION_KEY` ke Fernet key yang digunakan artifact sebelumnya.
+3. Redeploy branch/tag rollback.
+4. Jalankan `scripts/check_model_compatibility.py` dengan key rollback sebelum membuka traffic.

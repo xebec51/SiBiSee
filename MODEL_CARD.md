@@ -11,7 +11,9 @@ Model tidak boleh diklaim menerjemahkan tata bahasa SIBI lengkap, percakapan kon
 ## Artifact
 
 - Production artifact: `models/best.pt.enc`
-- SHA-256 encrypted artifact: `9f58c1af732e6817efb3776842667d72d98fb37c9a336a049fbd1d5b19da8661`
+- SHA-256 encrypted artifact: `04f9fb0f21e42dc01e3832f2e786aa92b281400035bb488d9ebbe5e7b146cd23`
+- Metadata: `models/best.metadata.json`
+- Artifact size: 30,176,460 bytes
 - Backend: PyTorch
 - Runtime: Ultralytics YOLO with CPU or CUDA-capable PyTorch environment
 - ONNX export/parity: NOT RUN - not required by the selected PyTorch deployment backend
@@ -29,6 +31,13 @@ Final validation, leakage-aware split, seeds 0/42/1337:
 | YOLOv8n lightweight mean | 0.8510 | 0.8525 | 0.9511 | 0.8330 | 3,157,200 | 8.86 |
 
 Selected production candidate before test evaluation: YOLOv8s-CBAM seed 42. Internal test result for that checkpoint: precision 0.9400, recall 0.9295, mAP50 0.9659, mAP50-95 0.8472.
+
+Production PyTorch benchmark, batch size 1, image size 640, 10 warm-up iterations, and 100 measured iterations:
+
+| Device | Mean ms | Median ms | p95 ms | FPS |
+| --- | ---: | ---: | ---: | ---: |
+| RTX 4060 Ti | 10.29 | 11.07 | 11.63 | 97.22 |
+| CPU | 70.14 | 68.00 | 84.58 | 14.26 |
 
 The lightweight model is the strongest deployment-efficiency candidate because it has much lower CPU latency and a much smaller checkpoint. Production promotion for this release proceeds without real-world holdout evidence by explicit scope decision. The model must not be described as validated for new participants, cameras, lighting, backgrounds, distances, or devices.
 

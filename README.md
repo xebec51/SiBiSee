@@ -32,6 +32,7 @@ Copy-Item .streamlit\secrets.toml.example .streamlit\secrets.toml
 ```
 
 Isi `.streamlit/secrets.toml` dengan key model dan credential Twilio bila dipakai. Jangan commit file secrets.
+Runtime memverifikasi `models/best.pt.enc` memakai checksum di `models/best.metadata.json`.
 
 ## Menjalankan Aplikasi
 
@@ -111,6 +112,14 @@ docs/
 ## Security
 
 Notebook lama pernah memuat Roboflow API key plaintext. Key lama telah direvoke dan history repository sudah dibersihkan pada upgrade ini. Detail ada di `SECURITY.md`.
+
+Model production metadata:
+
+- Artifact: `models/best.pt.enc`
+- Metadata: `models/best.metadata.json`
+- Backend: PyTorch
+- ONNX status: NOT RUN - not required by the selected PyTorch deployment backend
+- Holdout status: NOT RUN - intentionally excluded from the current release scope
 
 ## License
 

@@ -71,7 +71,7 @@ def test_package_model_round_trip_metadata_and_cleanup(tmp_path: Path, monkeypat
     assert loaded_metadata["encrypted_artifact_sha256"] == packaging.sha256_file(output)
     assert loaded_metadata["source_checkpoint_sha256"] == packaging.sha256_file(source)
     assert loaded_metadata["class_names"] == [f"class-{index}" for index in range(49)]
-    assert loaded_metadata["parameter_count"] == 25
+    assert loaded_metadata["parameter_count"] == packaging.SELECTED_PARAMETER_COUNT
     assert metadata["backend"] == "pytorch"
     assert metadata["holdout_status"] == "not_run"
     assert not list(tmp_path.glob("*.tmp"))

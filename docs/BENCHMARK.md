@@ -77,3 +77,20 @@ Final PyTorch benchmark was run after multi-seed training. Batch size 1, image s
 | Lightweight seed 1337 | CPU | 37.70 | 36.58 | 47.26 | 26.52 | 6,278,179 bytes |
 
 ONNX was not benchmarked because export parity validation has not been completed.
+
+## Production Artifact Benchmark
+
+Production backend: PyTorch. ONNX export/parity is NOT RUN because ONNX is not required by the selected PyTorch
+deployment backend.
+
+The production encrypted artifact was generated from the selected `final-cbam-seed42` checkpoint. Benchmarking was
+run against the source checkpoint with matching source SHA-256 recorded in `models/best.metadata.json`.
+
+Batch size 1, image size 640, 10 warm-up iterations, and 100 measured iterations:
+
+| Model | Device | Mean ms | Median ms | p95 ms | FPS | Annotation mean ms | Peak CUDA memory |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| CBAM seed 42 | RTX 4060 Ti | 10.29 | 11.07 | 11.63 | 97.22 | 0.31 | 110.94 MB |
+| CBAM seed 42 | CPU | 70.14 | 68.00 | 84.58 | 14.26 | 0.31 | N/A |
+
+These results are consistent with the earlier final-candidate PyTorch benchmark.
