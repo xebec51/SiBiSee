@@ -67,3 +67,9 @@ Rollback artifact membutuhkan pasangan artifact dan key yang cocok:
 2. Kembalikan deployment secret `model_security.ENCRYPTION_KEY` ke Fernet key yang digunakan artifact sebelumnya.
 3. Redeploy branch/tag rollback.
 4. Jalankan `scripts/check_model_compatibility.py` dengan key rollback sebelum membuka traffic.
+
+## Current Deployment Gate
+
+Deployment smoke for v2.0.0 is BLOCKED until the Fernet key is added to the deployment secret and the deployed app is
+restarted from branch `main`. Do not create the `v2.0.0` tag until `docs/audits/deployment-smoke.md` is updated with a
+real public URL and smoke-test evidence.

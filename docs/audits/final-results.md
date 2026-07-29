@@ -93,9 +93,10 @@ The lightweight model remains valuable for CPU deployment: it is much smaller an
 
 This release is a portfolio/research application for isolated SIBI sign recognition. It is not a complete sign-language translator and must not be used as a safety-critical or accessibility-critical system.
 
-## Remaining Gates
+## Release Gate Status
 
-- A production encrypted artifact has not been created.
-- Streamlit secrets have not been updated with a new model encryption key.
-- Clean-start app smoke test with the new artifact has not been run.
+- Production encrypted artifact: PASS.
+- Clean-start compatibility and app startup smoke: PASS.
+- Streamlit/deployment secrets update: BLOCKED - requires manual dashboard action.
+- Deployment smoke: BLOCKED - no public deployment URL or connected deployment control was available.
 - No tag or deployment was created.
