@@ -38,3 +38,22 @@ def test_create_splits_keeps_duplicate_cluster_together(tmp_path: Path) -> None:
     assert len(cluster_splits) == 1
     assert summary["strategy"] == "duplicate_cluster"
     assert (output_dir / "sibisee_splits.yaml").exists()
+
+
+def test_create_splits_preserves_class_coverage_when_groups_allow_it(tmp_path: Path) -> None:
+    manifest = tmp_path / "manifest.csv"
+    duplicates = tmp_path / "duplicate_groups.csv"
+    rows = []
+    for class_id in range(3):
+        for index in range(3):
+            rows.append({"image_path": f"class-{class_id}-{index}.jpg", "class_ids": str(class_id)})
+    write_rows(manifest, rows)
+    write_rows(duplicates, [{"group_id": "none", "kind": "phash", "member_count": "0", "splits": "", "members": ""}])
+
+    output_dir = tmp_path / "out"
+    create_splits(manifest, duplicates, output_dir, seed=7)
+
+    split_rows = list(csv.DictReader((output_dir / "split_manifest.csv").open(encoding="utf-8")))
+    for split in {"val", "test"}:
+        covered = {row["class_ids"] for row in split_rows if row["new_split"] == split}
+        assert covered == {"0", "1", "2"}

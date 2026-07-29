@@ -81,11 +81,54 @@ def class_key(rows: list[dict[str, str]]) -> str:
     return counts.most_common(1)[0][0] if counts else "unknown"
 
 
+def class_ids_for_rows(rows: list[dict[str, str]]) -> set[str]:
+    class_ids: set[str] = set()
+    for row in rows:
+        class_ids.update(class_id for class_id in row.get("class_ids", "").split("|") if class_id)
+    return class_ids
+
+
 def target_counts(total: int) -> dict[str, int]:
     train = round(total * SPLIT_RATIOS["train"])
     val = round(total * SPLIT_RATIOS["val"])
     test = max(0, total - train - val)
     return {"train": train, "val": val, "test": test}
+
+
+def coverage_by_split(groups: dict[str, list[dict[str, str]]], assignments: dict[str, str]) -> dict[str, Counter[str]]:
+    coverage: dict[str, Counter[str]] = {"train": Counter(), "val": Counter(), "test": Counter()}
+    for group_key, split in assignments.items():
+        for row in groups[group_key]:
+            for class_id in row.get("class_ids", "").split("|"):
+                if class_id:
+                    coverage[split][class_id] += 1
+    return coverage
+
+
+def reserve_class_coverage(
+    groups: dict[str, list[dict[str, str]]], rng: random.Random, desired_splits: tuple[str, ...] = ("val", "test")
+) -> dict[str, str]:
+    assignments: dict[str, str] = {}
+    group_classes = {group_key: class_ids_for_rows(members) for group_key, members in groups.items()}
+    all_classes = sorted({class_id for class_ids in group_classes.values() for class_id in class_ids})
+
+    for split in desired_splits:
+        covered: set[str] = set()
+        for class_id in all_classes:
+            if class_id in covered:
+                continue
+            candidates = [
+                (group_key, groups[group_key])
+                for group_key, class_ids in group_classes.items()
+                if class_id in class_ids and group_key not in assignments
+            ]
+            if not candidates:
+                continue
+            rng.shuffle(candidates)
+            group_key, members = min(candidates, key=lambda item: (len(item[1]), item[0]))
+            assignments[group_key] = split
+            covered.update(group_classes[group_key])
+    return assignments
 
 
 def assign_splits(groups: dict[str, list[dict[str, str]]], seed: int) -> dict[str, str]:
@@ -94,8 +137,10 @@ def assign_splits(groups: dict[str, list[dict[str, str]]], seed: int) -> dict[st
     for group_key, members in groups.items():
         grouped_by_class[class_key(members)].append((group_key, members))
 
-    assignments: dict[str, str] = {}
+    assignments = reserve_class_coverage(groups, rng)
     split_image_counts: Counter[str] = Counter()
+    for group_key, assigned_split in assignments.items():
+        split_image_counts[assigned_split] += len(groups[group_key])
     total_images = sum(len(members) for members in groups.values())
     targets = target_counts(total_images)
     split_order = ("train", "val", "test")
@@ -103,6 +148,8 @@ def assign_splits(groups: dict[str, list[dict[str, str]]], seed: int) -> dict[st
     for class_groups in grouped_by_class.values():
         rng.shuffle(class_groups)
         for group_key, members in class_groups:
+            if group_key in assignments:
+                continue
             split = min(
                 split_order,
                 key=lambda name: (
@@ -171,11 +218,19 @@ def create_splits(
         "strategy": strategy,
         "subject_independent_evaluation_claim": strategy == "signer",
         "image_counts": Counter(row["new_split"] for row in output_rows),
+        "class_coverage": coverage_by_split(groups, assignments),
         "group_count": len(groups),
         "split_manifest": str(split_manifest),
         "dataset_yaml": str(dataset_yaml),
     }
-    serializable_summary = {key: dict(value) if isinstance(value, Counter) else value for key, value in summary.items()}
+    serializable_summary = {
+        key: dict(value)
+        if isinstance(value, Counter)
+        else {split: dict(counter) for split, counter in value.items()}
+        if key == "class_coverage"
+        else value
+        for key, value in summary.items()
+    }
     (output_dir / "split_summary.json").write_text(
         json.dumps(serializable_summary, indent=2, sort_keys=True),
         encoding="utf-8",

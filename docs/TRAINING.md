@@ -43,16 +43,28 @@ Screening:
 .\.venv\Scripts\python.exe scripts\run_experiments.py `
   --stage screening `
   --models baseline cbam light `
-  --seeds 0
+  --seeds 0 `
+  --data artifacts\dataset\sibisee_splits.yaml `
+  --dataset-manifest artifacts\dataset\manifest.csv `
+  --split-manifest artifacts\dataset\split_manifest.csv `
+  --device 0 `
+  --workers 4
 ```
 
-Final multi-seed hanya boleh dijalankan setelah dataset audit, split leakage-aware, dan screening selesai:
+Final multi-seed hanya boleh dijalankan setelah dataset audit, split leakage-aware, screening, validation evaluation, and candidate selection selesai. Recommended next final candidates from the screening pass are `cbam` and `light`:
 
 ```powershell
 .\.venv\Scripts\python.exe scripts\run_experiments.py `
   --stage final `
-  --models baseline cbam `
-  --seeds 0 42 1337
+  --models cbam light `
+  --seeds 0 42 1337 `
+  --data artifacts\dataset\sibisee_splits.yaml `
+  --dataset-manifest artifacts\dataset\manifest.csv `
+  --split-manifest artifacts\dataset\split_manifest.csv `
+  --device 0 `
+  --workers 4
 ```
 
 Gunakan `--plan-only` untuk memeriksa config yang akan dibuat tanpa menjalankan training.
+
+Screening used one seed only and 25 epochs. All three candidates reached their best validation mAP50-95 at epoch 25, so final training should use a longer fixed budget or an identical early-stopping rule for every candidate.

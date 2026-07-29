@@ -25,8 +25,12 @@ runs/
 datasets/
 data/
 artifacts/private/
+artifacts/*
+!artifacts/models/
+!artifacts/models/architecture_smoke.json
 reports/private/
 temp_model.pt
+*.pt
 *.tmp
 models/best.pt
 

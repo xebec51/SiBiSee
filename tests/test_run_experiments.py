@@ -8,7 +8,7 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
-from run_experiments import MODEL_CATALOG, build_training_config, run_experiments  # noqa: E402
+from run_experiments import MODEL_CATALOG, build_training_config, metrics_from_results, run_experiments  # noqa: E402
 
 
 def test_build_training_config_keeps_protocol_constant_except_seed_and_name() -> None:
@@ -26,6 +26,7 @@ def test_build_training_config_keeps_protocol_constant_except_seed_and_name() ->
     assert first_args == second_args
     assert first["pretrained_weights"] == second["pretrained_weights"] == "yolov8s.pt"
     assert first["model_config"] == second["model_config"]
+    assert first["train_args"]["exist_ok"] is True
 
 
 def test_run_experiments_plan_only_writes_reproducible_plan(tmp_path: Path) -> None:
@@ -59,3 +60,28 @@ def test_run_experiments_plan_only_writes_reproducible_plan(tmp_path: Path) -> N
     assert len(summary_rows) == 2
     assert config["train_args"]["seed"] == 0
     assert Path(config["model_config"]).as_posix() == "configs/models/yolov8s.yaml"
+    assert config["train_args"]["exist_ok"] is True
+
+
+def test_metrics_from_results_uses_best_map50_95_epoch(tmp_path: Path) -> None:
+    results = tmp_path / "results.csv"
+    results.write_text(
+        "\n".join(
+            [
+                "epoch,time,metrics/precision(B),metrics/recall(B),metrics/mAP50(B),metrics/mAP50-95(B)",
+                "1,10,0.1,0.2,0.3,0.4",
+                "2,20,0.5,0.6,0.7,0.8",
+                "3,30,0.4,0.5,0.6,0.7",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    metrics = metrics_from_results(results)
+
+    assert metrics["best_epoch"] == 2
+    assert metrics["precision"] == 0.5
+    assert metrics["recall"] == 0.6
+    assert metrics["mAP50"] == 0.7
+    assert metrics["mAP50_95"] == 0.8
+    assert metrics["training_duration_seconds"] == 30.0

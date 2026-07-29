@@ -72,6 +72,7 @@ def build_training_config(
             "workers": workers,
             "project": str(runs_dir),
             "name": run_name,
+            "exist_ok": True,
         },
     }
 
@@ -113,8 +114,41 @@ def best_epoch_from_results(results_csv: Path) -> int | None:
     if not metric_keys:
         return None
     metric_key = metric_keys[0]
-    best_index, _ = max(enumerate(rows), key=lambda item: float(item[1].get(metric_key) or 0.0))
-    return best_index
+    _, best_row = max(enumerate(rows), key=lambda item: float(item[1].get(metric_key) or 0.0))
+    return int(float(best_row["epoch"]))
+
+
+def metrics_from_results(results_csv: Path) -> dict[str, float | int | None]:
+    if not results_csv.exists():
+        return {
+            "best_epoch": None,
+            "precision": None,
+            "recall": None,
+            "mAP50": None,
+            "mAP50_95": None,
+            "training_duration_seconds": None,
+        }
+    rows = list(csv.DictReader(results_csv.open(encoding="utf-8")))
+    if not rows:
+        return {
+            "best_epoch": None,
+            "precision": None,
+            "recall": None,
+            "mAP50": None,
+            "mAP50_95": None,
+            "training_duration_seconds": None,
+        }
+    map_key = "metrics/mAP50-95(B)"
+    best_row = max(rows, key=lambda row: float(row.get(map_key) or 0.0))
+    last_row = rows[-1]
+    return {
+        "best_epoch": int(float(best_row["epoch"])),
+        "precision": float(best_row.get("metrics/precision(B)") or 0.0),
+        "recall": float(best_row.get("metrics/recall(B)") or 0.0),
+        "mAP50": float(best_row.get("metrics/mAP50(B)") or 0.0),
+        "mAP50_95": float(best_row.get("metrics/mAP50-95(B)") or 0.0),
+        "training_duration_seconds": float(last_row.get("time") or 0.0),
+    }
 
 
 def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
@@ -200,6 +234,7 @@ def run_experiments(
                     status = "trained"
                 write_json(run_dir / "artifact_checksums.json", collect_artifact_checksums(run_dir))
 
+            metrics = metrics_from_results(run_dir / "results.csv")
             rows.append(
                 {
                     "run_name": config["run_name"],
@@ -209,9 +244,9 @@ def run_experiments(
                     "status": status,
                     "parameters": arch["parameters"],
                     "gflops": arch["gflops"],
-                    "best_epoch": best_epoch_from_results(run_dir / "results.csv"),
                     "config": str(config_path),
                     "run_dir": str(run_dir),
+                    **metrics,
                 }
             )
 
